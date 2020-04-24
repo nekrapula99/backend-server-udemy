@@ -15,7 +15,12 @@ var Usuario = require('../models/usuario');
 // ===============================
 app.get('/', (req, res, next) => {
 
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
+
     Usuario.find({}, 'nombre email img role')
+        .skip(desde)
+        .limit(5) //Paginar registros
         .exec(
             (err, usuarios) => {
 
@@ -27,10 +32,15 @@ app.get('/', (req, res, next) => {
                     });
                 }
 
-                res.status(200).json({
-                    ok: true,
-                    usuarios: usuarios
+                Usuario.count({}, (err, conteo) => {
+                    res.status(200).json({
+                        ok: true,
+                        usuarios: usuarios,
+                        totalUsers: conteo
+                    });
+
                 });
+
 
             });
 
@@ -69,6 +79,7 @@ app.put('/:id', middleware.verificaToken, (req, res) => {
         usuario.nombre = body.nombre;
         usuario.email = body.email;
         usuario.role = body.role;
+        usuario.img = body.img;
 
         usuario.save((err, usuarioGuardado) => {
 
@@ -127,7 +138,7 @@ app.post('/', middleware.verificaToken, (req, res) => {
     })
 
 
-})
+});
 
 
 // ===============================
